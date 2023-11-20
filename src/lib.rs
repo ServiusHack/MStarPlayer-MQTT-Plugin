@@ -141,12 +141,129 @@ pub extern "C" fn mstarPositionChanged(player_name: *const c_char, position: c_d
     publish(player_name, "position", payload);
 }
 
+slint::slint! {
+    import { LineEdit, SpinBox, StandardButton, VerticalBox, GroupBox } from "std-widgets.slint";
+    export component MainWindow inherits Window {
+        in property<string> default-server;
+        in property<string> server <=> server-edit.text;
+
+        in property<int> port <=> portEdit.value;
+
+        in property<string> default-client-name;
+        in property<string> client-name <=> client-name-edit.text;
+
+        in property<string> default-topic-prefix;
+        in property<string> topic-prefix <=> topic-prefix-edit.text;
+
+        callback save();
+        callback abort();
+
+        title: "M*Player MQTT Plugin";
+
+        VerticalBox {
+            alignment: start;
+
+            Text {
+                text: "Configure MQTT connection";
+                font-size: 24px;
+                horizontal-alignment: center;
+            }
+
+            HorizontalLayout {
+                GroupBox {
+                    title: "Server";
+                    horizontal-stretch: 1;
+                    server-edit := LineEdit {
+                        placeholder-text: root.default-server;
+                    }
+                }
+
+                GroupBox {
+                    title: "Port";
+                    portEdit := SpinBox {
+                        enabled: true;
+                        minimum: 1;
+                        maximum: 65535;
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Client Name";
+                client-name-edit := LineEdit {
+                    placeholder-text: root.default-client-name;
+                }
+            }
+
+            GroupBox {
+                title: "Topic Prefix";
+                topic-prefix-edit := LineEdit {
+                    placeholder-text: root.default-topic-prefix;
+                }
+            }
+
+            HorizontalLayout {
+                alignment: center;
+                StandardButton {
+                    kind: apply;
+                    enabled: server-edit.text != "" &&
+                        client-name-edit.text != "" &&
+                        topic-prefix-edit.text != "";
+                    clicked => {
+                        root.save();
+                    }
+                }
+                StandardButton {
+                    kind: cancel;
+                    clicked => {
+                        root.abort();
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn mstarConfigure() {
     debug!("mstarConfigure");
+    let window = MainWindow::new().unwrap();
 
-    *CONFIG.write().unwrap() = Some(Default::default());
-    mqtt::setup();
+    {
+        let default_config = Configuration::default();
+        let config = CONFIG.read().unwrap();
+        let config = config.as_ref().unwrap_or(&default_config);
+
+        window.set_server(config.server.clone().into());
+        window.set_port(config.port as i32);
+        window.set_client_name(config.client_name.clone().into());
+        window.set_topic_prefix(config.topic_prefix.clone().into());
+
+        window.set_default_server(default_config.server.into());
+        window.set_default_client_name(default_config.client_name.into());
+        window.set_default_topic_prefix(default_config.topic_prefix.into());
+    }
+
+    let weak = window.as_weak();
+    window.on_save(move || {
+        let window = weak.unwrap();
+
+        let config = Configuration {
+            server: window.get_server().into(),
+            port: window.get_port() as u16,
+            client_name: window.get_client_name().into(),
+            topic_prefix: window.get_topic_prefix().into(),
+        };
+        *CONFIG.write().unwrap() = Some(config);
+        mqtt::setup();
+
+        window.hide().unwrap();
+    });
+
+    let weak = window.as_weak();
+    window.on_abort(move || weak.unwrap().hide().unwrap());
+
+    window.run().unwrap();
 }
 
 #[no_mangle]
