@@ -98,37 +98,37 @@ pub extern "C" fn mstarPreviousEntrySelected(player_name: *const c_char) {
 
 #[no_mangle]
 pub extern "C" fn mstarPlaylistEntrySelected(
-    player_name: *const c_char,
-    playlist_index: c_int,
-    playlist_entry_name: *const c_char,
-    duration: c_double,
+    _player_name: *const c_char,
+    _playlist_index: c_int,
+    _playlist_entry_name: *const c_char,
+    _duration: c_double,
 ) {
     debug!("mstarPlaylistEntrySelected");
 }
 
 #[no_mangle]
 pub extern "C" fn mstarPlaylistEntryDurationChanged(
-    player_name: *const c_char,
-    playlist_index: c_int,
-    duration: c_double,
+    _player_name: *const c_char,
+    _playlist_index: c_int,
+    _duration: c_double,
 ) {
     debug!("mstarPlaylistEntryDurationChanged");
 }
 
 #[no_mangle]
 pub extern "C" fn mstarPlaylistEntryNameChanged(
-    player_name: *const c_char,
-    playlist_index: c_int,
-    playlist_entry_name: *const c_char,
+    _player_name: *const c_char,
+    _playlist_index: c_int,
+    _playlist_entry_name: *const c_char,
 ) {
     debug!("mstarPlaylistEntryNameChanged");
 }
 
 #[no_mangle]
 pub extern "C" fn mstarTrackVolumeChanged(
-    player_name: *const c_char,
-    track_name: *const c_char,
-    volume: c_double,
+    _player_name: *const c_char,
+    _track_name: *const c_char,
+    _volume: c_double,
 ) {
     debug!("mstarTrackVolumeChanged");
 }
@@ -213,7 +213,7 @@ pub extern "C" fn mstarGetConfiguration() -> *const c_char {
 pub extern "C" fn mstarFreeConfigurationText(configuration_text: *const c_char) {
     debug!("mstarFreeConfigurationText");
     unsafe {
-        let configuration = CString::from_raw(configuration_text as *mut i8);
+        let _configuration = CString::from_raw(configuration_text as *mut i8);
     }
 }
 
