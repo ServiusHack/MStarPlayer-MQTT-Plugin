@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "MStarPlayer-mqtt-rust-plugin"
+name = "MStarPlayer-mqtt-plugin"
 version = "0.1.0"
 dependencies = [
  "env_logger",
