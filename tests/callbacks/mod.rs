@@ -1,6 +1,6 @@
 use core::ffi::{c_char, c_float, c_void};
 use mockall::*;
-use MStarPlayer_mqtt_rust_plugin::plugin_interface_v2::*;
+use MStarPlayer_mqtt_plugin::plugin_interface_v2::*;
 
 #[automock]
 pub trait Callbacks {

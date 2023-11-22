@@ -9,7 +9,7 @@ use log::error;
 use mockall::predicate::*;
 use rumqttc::{Client, Connection, MqttOptions, Publish, QoS};
 use std::ffi::{CStr, CString};
-use MStarPlayer_mqtt_rust_plugin::*;
+use MStarPlayer_mqtt_plugin::*;
 
 /// Time to wait for MQTT messages.
 static TIMEOUT: Duration = Duration::new(1, 0);

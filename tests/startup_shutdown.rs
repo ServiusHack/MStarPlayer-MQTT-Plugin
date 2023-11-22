@@ -4,7 +4,7 @@ mod callbacks;
 
 use callbacks::*;
 use std::ffi::CString;
-use MStarPlayer_mqtt_rust_plugin::*;
+use MStarPlayer_mqtt_plugin::*;
 
 #[test]
 fn startup_shutdown() {
