@@ -4,7 +4,7 @@ mod mqtt;
 pub mod plugin_interface_v2;
 
 use core::ffi::{c_char, c_double, c_int};
-use log::{debug, error, warn};
+use log::{debug, error, info, warn};
 use plugin_interface_v2::*;
 use rumqttc::QoS;
 use std::ffi::{CStr, CString};
@@ -47,9 +47,14 @@ pub extern "C" fn mstarInit(init: &Init) {
 
 fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     let config = CONFIG.read().unwrap();
-    let config = &config
-        .as_ref()
-        .expect("CONFIG should be set by mstarConfigure or mstarLoadConfiguration");
+    let config = config.as_ref();
+    let config = match config {
+        Some(config) => config,
+        None => {
+            info!("Not publishing message since plugin wasn't configured yet.");
+            return;
+        }
+    };
     let prefix = &config.topic_prefix;
 
     let player_name = unsafe { CStr::from_ptr(player_name) };
