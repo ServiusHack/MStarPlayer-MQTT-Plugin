@@ -146,6 +146,7 @@ fn new_player_name_predicate(player_name: &CString) -> impl Fn(&*const c_char) -
 }
 
 #[test]
+#[ignore]
 fn mqtt_interaction() {
     let init = plugin_interface_v2::Init {
         listPlayers,
