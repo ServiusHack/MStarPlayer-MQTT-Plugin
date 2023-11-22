@@ -341,6 +341,7 @@ pub extern "C" fn mstarFreeConfigurationText(configuration_text: *const c_char) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::ffi::{c_char, c_float, c_void};
 
     #[test]
     fn version() {
@@ -350,7 +351,66 @@ mod tests {
 
     #[test]
     fn configuration() {
-        let configuration = mstarGetConfiguration();
-        mstarFreeConfigurationText(configuration);
+        let input_configuration = "127.0.0.1\n1\nclient\ntopic";
+        let input_configuration_raw = CString::new(input_configuration).unwrap();
+        unsafe {
+            mstarLoadConfiguration(input_configuration_raw.as_ptr());
+        }
+
+        let configuration_raw = mstarGetConfiguration();
+        let configuration = unsafe { CStr::from_ptr(configuration_raw) };
+        assert_eq!(configuration.to_str().unwrap(), input_configuration);
+        mstarFreeConfigurationText(configuration_raw);
+    }
+
+    extern "C" fn listPlayers(
+        _player_name: *const c_char,
+        _callback: ListPlayersCallbackFunction,
+        _user_data: *const c_void,
+    ) {
+    }
+
+    extern "C" fn playerFunction(_player_name: *const c_char) {}
+
+    extern "C" fn listTracks(
+        _player_name: *const c_char,
+        _callback: ListTracksCallbackFunction,
+        _user_data: *const c_void,
+    ) {
+    }
+
+    extern "C" fn setTrackVolume(
+        _player_name: *const c_char,
+        _track_name: *const c_char,
+        _volume: c_float,
+    ) {
+    }
+
+    #[test]
+    fn startup_shutdown() {
+        let init = Init {
+            listPlayers: listPlayers,
+            play: playerFunction,
+            stop: playerFunction,
+            next: playerFunction,
+            previous: playerFunction,
+            listTracks: listTracks,
+            setTrackVolume: setTrackVolume,
+        };
+        mstarInit(&init);
+
+        let empty_raw_string = CString::new("").unwrap();
+
+        // Player can call all these functions. They must not cause a crash.
+        mstarPlayingStateChanged(empty_raw_string.as_ptr(), true);
+        mstarNextEntrySelected(empty_raw_string.as_ptr());
+        mstarPreviousEntrySelected(empty_raw_string.as_ptr());
+        mstarPlaylistEntrySelected(empty_raw_string.as_ptr(), 0, empty_raw_string.as_ptr(), 0.0);
+        mstarPlaylistEntryDurationChanged(empty_raw_string.as_ptr(), 0, 0.0);
+        mstarPlaylistEntryNameChanged(empty_raw_string.as_ptr(), 0, empty_raw_string.as_ptr());
+        mstarTrackVolumeChanged(empty_raw_string.as_ptr(), empty_raw_string.as_ptr(), 0.0);
+        mstarPositionChanged(empty_raw_string.as_ptr(), 0.0);
+
+        mstarShutdown();
     }
 }
