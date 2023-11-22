@@ -37,6 +37,29 @@ These topics are being subscribed to by the plugin:
 
 The payload is ignored for all those topics.
 
+## Building
+
+The plugin can be built using:
+
+    cargo build
+
+It's also possible to cross-compile it for Windows:
+
+    rustup target add x86_64-pc-windows-gnu
+    SLINT_NO_QT= cargo build --target x86_64-pc-windows-gnu
+
+When cross-compiling Qt might not be available so `SLINT_NO_QT` is set [as documented](https://github.com/slint-ui/slint/blob/0b2e95f3115ba0f28256acebeb393271bb81d9a8/docs/install_qt.md#how-to-disable-the-qt-backend).
+
+## Testing
+
+Some tests can be run using:
+
+    cargo test
+
+The more extensive tests require an MQTT broker on `127.0.0.1:1883`. Then they can be run using:
+
+    cargo test -- --include-ignored
+
 ## License
 
 ISC
