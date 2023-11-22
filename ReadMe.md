@@ -36,3 +36,7 @@ These topics are being subscribed to by the plugin:
 | `<prefix>/monitor/<player name>/previous` | move the named player to the previous playlist entry |
 
 The payload is ignored for all those topics.
+
+## License
+
+ISC
