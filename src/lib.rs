@@ -47,7 +47,9 @@ pub extern "C" fn mstarInit(init: &Init) {
 
 fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     let config = CONFIG.read().unwrap();
-    let config = &config.as_ref().expect("CONFIG should be set by mstarInit");
+    let config = &config
+        .as_ref()
+        .expect("CONFIG should be set by mstarConfigure or mstarLoadConfiguration");
     let prefix = &config.topic_prefix;
 
     let player_name = unsafe { CStr::from_ptr(player_name) };
@@ -317,7 +319,9 @@ pub extern "C" fn mstarGetConfiguration() -> *const c_char {
     debug!("mstarGetConfiguration");
 
     let config = CONFIG.read().unwrap();
-    let config = &config.as_ref().expect("CONFIG should be set by mstarInit");
+    let config = &config
+        .as_ref()
+        .expect("CONFIG should be set by mstarConfigure or mstarLoadConfiguration");
     let configuration = format!(
         "{}\n{}\n{}\n{}",
         config.server, config.port, config.client_name, config.topic_prefix
