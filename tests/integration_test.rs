@@ -1,73 +1,15 @@
 #![allow(non_snake_case)]
 
-use core::ffi::{c_char, c_float, c_void};
+mod callbacks;
+
+use callbacks::*;
+use core::ffi::c_char;
 use core::time::Duration;
 use log::error;
 use mockall::predicate::*;
-use mockall::*;
 use rumqttc::{Client, Connection, MqttOptions, Publish, QoS};
 use std::ffi::{CStr, CString};
-use MStarPlayer_mqtt_rust_plugin::plugin_interface_v2::*;
 use MStarPlayer_mqtt_rust_plugin::*;
-
-#[automock]
-pub trait Callbacks {
-    fn list_players(
-        player_name: *const c_char,
-        callback: ListPlayersCallbackFunction,
-        user_data: *const c_void,
-    );
-    fn play(player_name: *const c_char);
-    fn stop(player_name: *const c_char);
-    fn next(player_name: *const c_char);
-    fn previous(player_name: *const c_char);
-    fn list_tracks(
-        player_name: *const c_char,
-        callback: ListTracksCallbackFunction,
-        user_data: *const c_void,
-    );
-    fn set_track_volume(player_name: *const c_char, track_name: *const c_char, volume: c_float);
-}
-
-extern "C" fn listPlayers(
-    player_name: *const c_char,
-    callback: ListPlayersCallbackFunction,
-    user_data: *const c_void,
-) {
-    MockCallbacks::list_players(player_name, callback, user_data);
-}
-
-extern "C" fn play(player_name: *const c_char) {
-    MockCallbacks::play(player_name);
-}
-
-extern "C" fn stop(player_name: *const c_char) {
-    MockCallbacks::stop(player_name);
-}
-
-extern "C" fn next(player_name: *const c_char) {
-    MockCallbacks::next(player_name);
-}
-
-extern "C" fn previous(player_name: *const c_char) {
-    MockCallbacks::previous(player_name);
-}
-
-extern "C" fn listTracks(
-    player_name: *const c_char,
-    callback: ListTracksCallbackFunction,
-    user_data: *const c_void,
-) {
-    MockCallbacks::list_tracks(player_name, callback, user_data);
-}
-
-extern "C" fn setTrackVolume(
-    player_name: *const c_char,
-    track_name: *const c_char,
-    volume: c_float,
-) {
-    MockCallbacks::set_track_volume(player_name, track_name, volume);
-}
 
 /// Time to wait for MQTT messages.
 static TIMEOUT: Duration = Duration::new(1, 0);
