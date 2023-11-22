@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 mod mqtt;
-mod plugin_interface_v2;
+pub mod plugin_interface_v2;
 
 use core::ffi::{c_char, c_double, c_int};
 use log::{debug, error, warn};

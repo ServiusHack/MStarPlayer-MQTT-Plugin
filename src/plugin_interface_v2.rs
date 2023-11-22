@@ -6,15 +6,17 @@
 
 use core::ffi::{c_char, c_float, c_void};
 
-type ListPlayersCallbackFunction = extern "C" fn(*const c_char, *const c_void);
-type ListPlayersFunction = extern "C" fn(*const c_char, ListPlayersCallbackFunction, *const c_void);
-type PlayFunction = extern "C" fn(*const c_char);
-type StopFunction = extern "C" fn(*const c_char);
-type NextFunction = extern "C" fn(*const c_char);
-type PreviousFunction = extern "C" fn(*const c_char);
-type ListTracksCallbackFunction = extern "C" fn(*const c_char, *const c_char, *const c_void);
-type ListTracksFunction = extern "C" fn(*const c_char, ListTracksCallbackFunction, *const c_void);
-type SetTrackVolumeFunction = extern "C" fn(*const c_char, *const c_char, c_float);
+pub type ListPlayersCallbackFunction = extern "C" fn(*const c_char, *const c_void);
+pub type ListPlayersFunction =
+    extern "C" fn(*const c_char, ListPlayersCallbackFunction, *const c_void);
+pub type PlayFunction = extern "C" fn(*const c_char);
+pub type StopFunction = extern "C" fn(*const c_char);
+pub type NextFunction = extern "C" fn(*const c_char);
+pub type PreviousFunction = extern "C" fn(*const c_char);
+pub type ListTracksCallbackFunction = extern "C" fn(*const c_char, *const c_char, *const c_void);
+pub type ListTracksFunction =
+    extern "C" fn(*const c_char, ListTracksCallbackFunction, *const c_void);
+pub type SetTrackVolumeFunction = extern "C" fn(*const c_char, *const c_char, c_float);
 
 #[repr(C)]
 #[derive(Clone)]
