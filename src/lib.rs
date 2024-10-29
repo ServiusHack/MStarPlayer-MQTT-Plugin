@@ -294,6 +294,13 @@ pub unsafe extern "C" fn mstarLoadConfiguration(configuration_text: *const c_cha
         }
     };
 
+    if configuration_text.is_empty() {
+        warn!("Configuration was empty.");
+        mqtt::teardown();
+        *CONFIG.write().unwrap() = None;
+        return;
+    }
+
     let parts: Vec<&str> = configuration_text.split('\n').collect();
 
     if parts.len() != 4 {
@@ -324,13 +331,15 @@ pub extern "C" fn mstarGetConfiguration() -> *const c_char {
     debug!("mstarGetConfiguration");
 
     let config = CONFIG.read().unwrap();
-    let config = &config
-        .as_ref()
-        .expect("CONFIG should be set by mstarConfigure or mstarLoadConfiguration");
-    let configuration = format!(
-        "{}\n{}\n{}\n{}",
-        config.server, config.port, config.client_name, config.topic_prefix
-    );
+    let configuration = match config.as_ref() {
+        None => String::new(),
+        Some(config) => {
+            format!(
+                "{}\n{}\n{}\n{}",
+                config.server, config.port, config.client_name, config.topic_prefix
+            )
+        }
+    };
 
     CString::new(configuration).unwrap().into_raw()
 }
