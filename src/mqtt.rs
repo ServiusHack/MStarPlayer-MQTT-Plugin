@@ -95,34 +95,38 @@ pub fn setup() {
         config.server.clone(),
         config.port,
     );
+    let topic_prefix = config.topic_prefix.clone();
 
-    let (mut client, mut connection) = Client::new(options, 10);
+    let (client, mut connection) = Client::new(options, 10);
 
-    client
-        .subscribe(
-            format!("{}/control/#", config.topic_prefix),
-            QoS::AtMostOnce,
-        )
-        .unwrap();
-
-    *CLIENT.lock().unwrap() = Some(client);
+    *CLIENT.lock().unwrap() = Some(client.clone());
     *JOIN_HANDLE.lock().unwrap() = Some(thread::spawn(move || {
-        for (i, notification) in connection.iter().enumerate() {
-            match notification {
-                Ok(rumqttc::Event::Incoming(rumqttc::Incoming::Publish(p))) => {
-                    handle_message(p);
-                }
-                Ok(rumqttc::Event::Outgoing(rumqttc::Outgoing::Disconnect)) => {
-                    return;
-                }
-                Ok(notify) => {
-                    debug!("{i}. Notification = {notify:?}");
-                }
-                Err(error) => {
-                    error!("{:#?}", error);
-                    return;
+        loop {
+            client
+                .subscribe(format!("{}/control/#", topic_prefix), QoS::AtMostOnce)
+                .unwrap();
+
+            for (i, notification) in connection.iter().enumerate() {
+                match notification {
+                    Ok(rumqttc::Event::Incoming(rumqttc::Incoming::Publish(p))) => {
+                        handle_message(p);
+                    }
+                    Ok(rumqttc::Event::Outgoing(rumqttc::Outgoing::Disconnect)) => {
+                        return;
+                    }
+                    Ok(notify) => {
+                        debug!("{i}. Notification = {notify:?}");
+                    }
+                    Err(error) => {
+                        error!("{:#?}", error);
+                        break;
+                    }
                 }
             }
+            // slow down error rate
+            std::thread::sleep(std::time::Duration::from_secs(1));
+
+            connection.eventloop.clean();
         }
     }));
 }
