@@ -71,7 +71,7 @@ fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     let mut client = mqtt::CLIENT.lock().unwrap();
     match client.as_mut() {
         Some(client) => {
-            if let Err(e) = client.publish(topic, QoS::AtLeastOnce, false, payload) {
+            if let Err(e) = client.try_publish(topic, QoS::AtLeastOnce, false, payload) {
                 error!("{}", e);
             }
         }
