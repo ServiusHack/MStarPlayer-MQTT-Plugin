@@ -30,10 +30,10 @@ These topics are being subscribed to by the plugin:
 
 | Topic                                     | Will                                                  |
 |-------------------------------------------|-------------------------------------------------------|
-| `<prefix>/monitor/<player name>/play`     | start playback of the named player                   |
-| `<prefix>/monitor/<player name>/stop`     | stop playback of the named player                    |
-| `<prefix>/monitor/<player name>/next`     | move the named player to the next playlist entry     |
-| `<prefix>/monitor/<player name>/previous` | move the named player to the previous playlist entry |
+| `<prefix>/control/<player name>/play`     | start playback of the named player                    |
+| `<prefix>/control/<player name>/stop`     | stop playback of the named player                     |
+| `<prefix>/control/<player name>/next`     | move the named player to the next playlist entry      |
+| `<prefix>/control/<player name>/previous` | move the named player to the previous playlist entry  |
 
 The payload is ignored for all those topics.
 
