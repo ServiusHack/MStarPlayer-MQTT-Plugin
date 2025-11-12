@@ -152,15 +152,15 @@ slint::slint! {
     import { LineEdit, SpinBox, StandardButton, VerticalBox, GroupBox } from "std-widgets.slint";
     export component MainWindow inherits Window {
         in property<string> default-server;
-        in property<string> server <=> server-edit.text;
+        in-out property<string> server <=> server-edit.text;
 
-        in property<int> port <=> portEdit.value;
+        in-out property<int> port <=> portEdit.value;
 
         in property<string> default-client-name;
-        in property<string> client-name <=> client-name-edit.text;
+        in-out property<string> client-name <=> client-name-edit.text;
 
         in property<string> default-topic-prefix;
-        in property<string> topic-prefix <=> topic-prefix-edit.text;
+        in-out property<string> topic-prefix <=> topic-prefix-edit.text;
 
         callback save();
         callback abort();
