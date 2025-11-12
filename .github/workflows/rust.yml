@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose
     - name: Start MQTT broker
@@ -28,12 +28,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose --release
     - name: Run tests
       run: cargo test --verbose --release
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: MStarPlayer MQTT Plugin for Windows
         path: target/release/MStarPlayer_MQTT_plugin.dll
