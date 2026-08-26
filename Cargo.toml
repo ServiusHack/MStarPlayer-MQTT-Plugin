@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-log = "0.4.28"
-env_logger = "0.10.2"
-rumqttc = "0.24.0"
-slint = "1.14.1"
+log = "0.4.34"
+env_logger = "0.11.11"
+rumqttc = "0.25.1"
+slint = "1.17.1"
 
 [dev-dependencies]
-mockall = "0.11.4"
+mockall = "0.15.0"
 
 [lib]
 crate-type=["lib", "cdylib"]
