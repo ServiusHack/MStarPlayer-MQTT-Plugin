@@ -1,6 +1,6 @@
-use core::ffi::{c_char, c_float, c_void};
+use core::ffi::{c_char, c_float, c_int, c_void};
 use mockall::*;
-use MStarPlayer_mqtt_plugin::plugin_interface_v2::*;
+use MStarPlayer_mqtt_plugin::plugin_interface_v4::*;
 
 #[automock]
 pub trait Callbacks {
@@ -13,6 +13,7 @@ pub trait Callbacks {
     fn stop(player_name: *const c_char);
     fn next(player_name: *const c_char);
     fn previous(player_name: *const c_char);
+    fn select(player_name: *const c_char, playlist_index: c_int);
     fn list_tracks(
         player_name: *const c_char,
         callback: ListTracksCallbackFunction,
@@ -43,6 +44,10 @@ pub extern "C" fn next(player_name: *const c_char) {
 
 pub extern "C" fn previous(player_name: *const c_char) {
     MockCallbacks::previous(player_name);
+}
+
+pub extern "C" fn select(player_name: *const c_char, playlist_index: c_int) {
+    MockCallbacks::select(player_name, playlist_index);
 }
 
 pub extern "C" fn listTracks(

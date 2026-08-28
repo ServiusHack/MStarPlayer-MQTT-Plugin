@@ -1,11 +1,11 @@
 #![allow(non_snake_case)]
 
 mod mqtt;
-pub mod plugin_interface_v2;
+pub mod plugin_interface_v4;
 
 use core::ffi::{c_char, c_double, c_int};
 use log::{debug, error, info, warn};
-use plugin_interface_v2::*;
+use plugin_interface_v4::*;
 use rumqttc::QoS;
 use std::ffi::{CStr, CString};
 use std::sync::RwLock;
@@ -34,7 +34,7 @@ static INIT: RwLock<Option<Init>> = RwLock::new(None);
 
 #[no_mangle]
 pub extern "C" fn mstarPluginVersion() -> c_int {
-    2
+    4
 }
 
 #[no_mangle]
@@ -103,14 +103,29 @@ pub extern "C" fn mstarPreviousEntrySelected(player_name: *const c_char) {
     publish(player_name, "previous", Vec::new());
 }
 
+fn payload_from_raw_string(playlist_entry_name: *const c_char) -> Vec<u8> {
+    let playlist_entry_name = unsafe { CStr::from_ptr(playlist_entry_name) };
+    playlist_entry_name.to_bytes().into()
+}
+
 #[no_mangle]
 pub extern "C" fn mstarPlaylistEntrySelected(
-    _player_name: *const c_char,
-    _playlist_index: c_int,
-    _playlist_entry_name: *const c_char,
-    _duration: c_double,
+    player_name: *const c_char,
+    playlist_index: c_int,
+    playlist_entry_name: *const c_char,
+    duration: c_double,
 ) {
-    debug!("mstarPlaylistEntrySelected");
+    publish(
+        player_name,
+        "select",
+        playlist_index.to_string().into_bytes(),
+    );
+
+    let payload = payload_from_raw_string(playlist_entry_name);
+
+    publish(player_name, "entry", payload);
+
+    publish(player_name, "duration", duration.to_string().into_bytes());
 }
 
 #[no_mangle]
@@ -138,6 +153,14 @@ pub extern "C" fn mstarTrackVolumeChanged(
     _volume: c_double,
 ) {
     debug!("mstarTrackVolumeChanged");
+}
+
+#[no_mangle]
+pub extern "C" fn mstarPlayerVolumeChanged(player_name: *const c_char, volume: c_double) {
+    debug!("mstarPlayerVolumeChanged");
+
+    let payload = volume.to_string().into_bytes();
+    publish(player_name, "volume", payload);
 }
 
 #[no_mangle]
@@ -359,7 +382,7 @@ mod tests {
     #[test]
     fn version() {
         let result = mstarPluginVersion();
-        assert_eq!(result, 2);
+        assert_eq!(result, 4);
     }
 
     #[test]

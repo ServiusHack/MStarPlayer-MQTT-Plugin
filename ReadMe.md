@@ -25,6 +25,10 @@ For each player the plugin will published to these topics under `<prefix>/monito
 | `next`     | jumped to next playlist entry     | *none*                              |
 | `previous` | jumped to previous playlist entry | *none*                              |
 | `position` | playback position changed         | floating point in seconds as string |
+| `volume`   | volume changed                    | floating point as string            |
+| `select`   | selected playlist entry changed   | 0-based index                       |
+| `entry`    | selected playlist entry changed   | string                              |
+| `duration` | selected playlist entry changed   | floating point in seconds as string |
 
 While playback is happening messages are published as often as the player informs the plugin about an updated playback position. This is usually multiple times per second.
 
@@ -38,6 +42,7 @@ For each player the plugin subscribes to these topics under `<prefix>/control/<p
 | `stop`     | stop playback                       | *none*        |
 | `next`     | jump to the next playlist entry     | *none*        |
 | `previous` | jump to the previous playlist entry | *none*        |
+| `select`   | select playlist entry               | 0-based index |
 
 ## Building
 
