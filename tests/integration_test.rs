@@ -3,7 +3,7 @@
 mod callbacks;
 
 use callbacks::*;
-use core::ffi::c_char;
+use core::ffi::{c_char, c_int};
 use core::time::Duration;
 use log::error;
 use mockall::predicate::*;
@@ -56,8 +56,17 @@ fn wait_for_no_publish(connection: &mut Connection) {
 }
 
 fn publish_and_wait(client: &mut Client, topic: String, connection: &mut Connection) {
+    publish_with_payload_and_wait(client, topic, Vec::new(), connection);
+}
+
+fn publish_with_payload_and_wait(
+    client: &mut Client,
+    topic: String,
+    payload: Vec<u8>,
+    connection: &mut Connection,
+) {
     client
-        .publish(topic, QoS::AtLeastOnce, false, Vec::new())
+        .publish(topic, QoS::AtLeastOnce, false, payload)
         .unwrap();
     loop {
         match connection.recv_timeout(TIMEOUT) {
@@ -87,15 +96,28 @@ fn new_player_name_predicate(player_name: &CString) -> impl Fn(&*const c_char) -
     }
 }
 
+fn new_select_predicate(
+    player_name: &CString,
+    playlist_index: c_int,
+) -> impl Fn(&*const c_char, &c_int) -> bool {
+    let player_name = player_name.clone();
+    move |p: &*const c_char, i: &c_int| {
+        let p = unsafe { CStr::from_ptr(p.clone()) };
+
+        p.to_bytes() == player_name.as_bytes() && *i == playlist_index
+    }
+}
+
 #[test]
 #[ignore]
 fn mqtt_interaction() {
-    let init = plugin_interface_v2::Init {
+    let init = plugin_interface_v4::Init {
         listPlayers,
         play,
         stop,
         next,
         previous,
+        select,
         listTracks,
         setTrackVolume,
     };
@@ -143,7 +165,29 @@ fn mqtt_interaction() {
         assert!(p.payload.is_empty());
     }
 
-    mstarPlaylistEntrySelected(player_name.as_ptr(), 0, player_name.as_ptr(), 0.0);
+    let entry_name = CString::new("playlist entry 1").unwrap();
+    mstarPlaylistEntrySelected(player_name.as_ptr(), 5, entry_name.as_ptr(), 2.4);
+
+    if let Some(p) = wait_for_publish(&mut connection) {
+        assert_eq!(
+            p.topic,
+            format!("{TOPIC_PREFIX}/monitor/Test Player/select")
+        );
+        assert_eq!(str::from_utf8(&p.payload).unwrap(), "5");
+    }
+
+    if let Some(p) = wait_for_publish(&mut connection) {
+        assert_eq!(p.topic, format!("{TOPIC_PREFIX}/monitor/Test Player/entry"));
+        assert_eq!(str::from_utf8(&p.payload).unwrap(), "playlist entry 1");
+    }
+
+    if let Some(p) = wait_for_publish(&mut connection) {
+        assert_eq!(
+            p.topic,
+            format!("{TOPIC_PREFIX}/monitor/Test Player/duration")
+        );
+        assert_eq!(str::from_utf8(&p.payload).unwrap(), "2.4");
+    }
 
     wait_for_no_publish(&mut connection);
 
@@ -225,6 +269,22 @@ fn mqtt_interaction() {
         publish_and_wait(
             &mut client,
             format!("{TOPIC_PREFIX}/control/Test Player/previous"),
+            &mut connection,
+        );
+    }
+
+    {
+        let player_name = player_name.clone();
+        let ctx = MockCallbacks::select_context();
+        ctx.expect()
+            .once()
+            .return_const(())
+            .withf(new_select_predicate(&player_name, 123));
+
+        publish_with_payload_and_wait(
+            &mut client,
+            format!("{TOPIC_PREFIX}/control/Test Player/select"),
+            String::from("123").as_bytes().into(),
             &mut connection,
         );
     }

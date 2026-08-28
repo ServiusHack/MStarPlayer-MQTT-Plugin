@@ -75,6 +75,19 @@ fn handle_message(p: Publish) {
         "previous" => {
             (init.previous)(received_player_name.as_ptr());
         }
+        "select" => match String::from_utf8(p.payload.to_vec()) {
+            Ok(payload) => match payload.parse::<i32>() {
+                Ok(playlist_index) => {
+                    (init.select)(received_player_name.as_ptr(), playlist_index);
+                }
+                Err(e) => {
+                    warn!("Received payload isn't a 32 bit signed number: {e}");
+                }
+            },
+            Err(e) => {
+                warn!("Received payload unable to decode as UTF-8: {e}");
+            }
+        },
         _ => {
             warn!("Received topic with unknown command: {}", p.topic);
         }

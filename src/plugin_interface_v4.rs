@@ -1,0 +1,33 @@
+//! Adaptation of PluginInterfaceV4.h of M*Player for Rust
+//!
+//! The types in this module reflect the types specified in the PluginInterfaceV4.h header.
+//! They are required to be ABI compatible with M*Player.
+//! **Exception:** Signatures of functions that must be implemented by the plugin aren't repeated here.
+
+use core::ffi::{c_char, c_float, c_int, c_void};
+
+pub type ListPlayersCallbackFunction = extern "C" fn(*const c_char, *const c_void);
+pub type ListPlayersFunction =
+    extern "C" fn(*const c_char, ListPlayersCallbackFunction, *const c_void);
+pub type PlayFunction = extern "C" fn(*const c_char);
+pub type StopFunction = extern "C" fn(*const c_char);
+pub type NextFunction = extern "C" fn(*const c_char);
+pub type PreviousFunction = extern "C" fn(*const c_char);
+pub type SelectFunction = extern "C" fn(*const c_char, c_int);
+pub type ListTracksCallbackFunction = extern "C" fn(*const c_char, *const c_char, *const c_void);
+pub type ListTracksFunction =
+    extern "C" fn(*const c_char, ListTracksCallbackFunction, *const c_void);
+pub type SetTrackVolumeFunction = extern "C" fn(*const c_char, *const c_char, c_float);
+
+#[repr(C)]
+#[derive(Clone)]
+pub struct Init {
+    pub listPlayers: ListPlayersFunction,
+    pub play: PlayFunction,
+    pub stop: StopFunction,
+    pub next: NextFunction,
+    pub previous: PreviousFunction,
+    pub select: SelectFunction,
+    pub listTracks: ListTracksFunction,
+    pub setTrackVolume: SetTrackVolumeFunction,
+}

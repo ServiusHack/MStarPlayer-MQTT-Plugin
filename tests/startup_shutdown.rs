@@ -8,12 +8,13 @@ use MStarPlayer_mqtt_plugin::*;
 
 #[test]
 fn startup_shutdown() {
-    let init = plugin_interface_v2::Init {
+    let init = plugin_interface_v4::Init {
         listPlayers,
         play,
         stop,
         next,
         previous,
+        select,
         listTracks,
         setTrackVolume,
     };
@@ -29,6 +30,7 @@ fn startup_shutdown() {
     mstarPlaylistEntryDurationChanged(empty_raw_string.as_ptr(), 0, 0.0);
     mstarPlaylistEntryNameChanged(empty_raw_string.as_ptr(), 0, empty_raw_string.as_ptr());
     mstarTrackVolumeChanged(empty_raw_string.as_ptr(), empty_raw_string.as_ptr(), 0.0);
+    mstarPlayerVolumeChanged(empty_raw_string.as_ptr(), 0.0);
     mstarPositionChanged(empty_raw_string.as_ptr(), 0.0);
 
     mstarShutdown();
