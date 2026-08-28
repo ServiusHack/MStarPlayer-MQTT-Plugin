@@ -13,29 +13,31 @@ The general structure of the topics is:
 * The *player name* is the name of the player it appears with on screen.
 * The *command* depends on the *scope* and is either a command to the player or an activity of it.
 
-These topics are published by the plugin:
 
-| Topic                                     | When                                                  |
-|-------------------------------------------|-------------------------------------------------------|
-| `<prefix>/monitor/<player name>/playing`  | the named player started playback                     |
-| `<prefix>/monitor/<player name>/stopped`  | the named player stopped playback                     |
-| `<prefix>/monitor/<player name>/next`     | the named player moved to the next playlist entry     |
-| `<prefix>/monitor/<player name>/previous` | the named player moved to the previous playlist entry |
-| `<prefix>/monitor/<player name>/position` | the named player playback position changed            |
+### Publishing
 
-Most topics have no payload, except for the `position` command. It contains the string representation of the floating point value of the current playback position in seconds.
+For each player the plugin will published to these topics under `<prefix>/monitor/<player name>/<command>`:
+
+| Command    | When                              | Payload                             |
+|------------|-----------------------------------|-------------------------------------|
+| `playing`  | playback started                  | *none*                              |
+| `stopped`  | playback stopped                  | *none*                              |
+| `next`     | jumped to next playlist entry     | *none*                              |
+| `previous` | jumped to previous playlist entry | *none*                              |
+| `position` | playback position changed         | floating point in seconds as string |
+
 While playback is happening messages are published as often as the player informs the plugin about an updated playback position. This is usually multiple times per second.
 
-These topics are being subscribed to by the plugin:
+### Subscribed
 
-| Topic                                     | Will                                                  |
-|-------------------------------------------|-------------------------------------------------------|
-| `<prefix>/control/<player name>/play`     | start playback of the named player                    |
-| `<prefix>/control/<player name>/stop`     | stop playback of the named player                     |
-| `<prefix>/control/<player name>/next`     | move the named player to the next playlist entry      |
-| `<prefix>/control/<player name>/previous` | move the named player to the previous playlist entry  |
+For each player the plugin subscribes to these topics under `<prefix>/control/<player name>/<command>`:
 
-The payload is ignored for all those topics.
+| Command    | Will                                | Payload       |
+|------------|-------------------------------------|---------------|
+| `play`     | start playback                      | *none*        |
+| `stop`     | stop playback                       | *none*        |
+| `next`     | jump to the next playlist entry     | *none*        |
+| `previous` | jump to the previous playlist entry | *none*        |
 
 ## Building
 
