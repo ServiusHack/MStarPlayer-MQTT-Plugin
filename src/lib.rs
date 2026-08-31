@@ -48,12 +48,9 @@ pub extern "C" fn mstarInit(init: &Init) {
 fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     let config = CONFIG.read().unwrap();
     let config = config.as_ref();
-    let config = match config {
-        Some(config) => config,
-        None => {
-            info!("Not publishing message since plugin wasn't configured yet.");
-            return;
-        }
+    let Some(config) = config else {
+        info!("Not publishing message since plugin wasn't configured yet.");
+        return;
     };
     let prefix = &config.topic_prefix;
 
@@ -61,7 +58,7 @@ fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     let player_name = match player_name.to_str() {
         Ok(s) => s,
         Err(e) => {
-            error!("{}", e);
+            error!("{e}");
             return;
         }
     };
@@ -72,7 +69,7 @@ fn publish(player_name: *const c_char, event: &str, payload: Vec<u8>) {
     match client.as_mut() {
         Some(client) => {
             if let Err(e) = client.try_publish(topic, QoS::AtLeastOnce, false, payload) {
-                error!("{}", e);
+                error!("{e}");
             }
         }
         None => {
@@ -265,7 +262,7 @@ pub extern "C" fn mstarConfigure() {
         let config = config.as_ref().unwrap_or(&default_config);
 
         window.set_server(config.server.clone().into());
-        window.set_port(config.port as i32);
+        window.set_port(config.port.into());
         window.set_client_name(config.client_name.clone().into());
         window.set_topic_prefix(config.topic_prefix.clone().into());
 
@@ -280,7 +277,10 @@ pub extern "C" fn mstarConfigure() {
 
         let config = Configuration {
             server: window.get_server().into(),
-            port: window.get_port() as u16,
+            port: window
+                .get_port()
+                .try_into()
+                .expect("UI limited value to valid range"),
             client_name: window.get_client_name().into(),
             topic_prefix: window.get_topic_prefix().into(),
         };
@@ -312,7 +312,7 @@ pub unsafe extern "C" fn mstarLoadConfiguration(configuration_text: *const c_cha
     let configuration_text = match configuration_text.to_str() {
         Ok(s) => s,
         Err(e) => {
-            error!("{}", e);
+            error!("{e}");
             return;
         }
     };
@@ -371,7 +371,7 @@ pub extern "C" fn mstarGetConfiguration() -> *const c_char {
 pub extern "C" fn mstarFreeConfigurationText(configuration_text: *const c_char) {
     debug!("mstarFreeConfigurationText");
     unsafe {
-        let _configuration = CString::from_raw(configuration_text as *mut i8);
+        let _configuration = CString::from_raw(configuration_text.cast_mut());
     }
 }
 

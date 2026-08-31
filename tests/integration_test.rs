@@ -27,7 +27,7 @@ fn wait_for_publish(connection: &mut Connection) -> Option<Publish> {
             }
             Ok(Ok(_)) => {}
             Ok(Err(e)) => {
-                error!("{}", e);
+                error!("{e}");
                 return None;
             }
             Err(_) => {
@@ -46,7 +46,7 @@ fn wait_for_no_publish(connection: &mut Connection) {
             }
             Ok(Ok(_)) => {}
             Ok(Err(e)) => {
-                error!("{}", e);
+                error!("{e}");
             }
             Err(_) => {
                 break;
@@ -75,7 +75,7 @@ fn publish_with_payload_and_wait(
             }
             Ok(Ok(_)) => {}
             Ok(Err(e)) => {
-                error!("{}", e);
+                error!("{e}");
             }
             Err(_) => {
                 error!("Timeout waiting for publishing of MQTT message");
@@ -90,7 +90,7 @@ fn publish_with_payload_and_wait(
 fn new_player_name_predicate(player_name: &CString) -> impl Fn(&*const c_char) -> bool {
     let player_name = player_name.clone();
     move |p: &*const c_char| {
-        let p = unsafe { CStr::from_ptr(p.clone()) };
+        let p = unsafe { CStr::from_ptr(*p) };
 
         p.to_bytes() == player_name.as_bytes()
     }
@@ -102,14 +102,14 @@ fn new_select_predicate(
 ) -> impl Fn(&*const c_char, &c_int) -> bool {
     let player_name = player_name.clone();
     move |p: &*const c_char, i: &c_int| {
-        let p = unsafe { CStr::from_ptr(p.clone()) };
+        let p = unsafe { CStr::from_ptr(*p) };
 
         p.to_bytes() == player_name.as_bytes() && *i == playlist_index
     }
 }
 
 #[test]
-#[ignore]
+#[ignore = "Requires running MQTT broker"]
 fn mqtt_interaction() {
     let init = plugin_interface_v4::Init {
         listPlayers,
@@ -134,7 +134,7 @@ fn mqtt_interaction() {
     let (mut client, mut connection) = Client::new(options, 10);
 
     client
-        .subscribe(format!("{}/monitor/#", TOPIC_PREFIX), QoS::AtMostOnce)
+        .subscribe(format!("{TOPIC_PREFIX}/monitor/#"), QoS::AtMostOnce)
         .unwrap();
 
     let player_name = CString::new("Test Player").unwrap();
