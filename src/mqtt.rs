@@ -9,7 +9,7 @@ use crate::{CONFIG, INIT};
 pub static CLIENT: Mutex<Option<Client>> = Mutex::new(None);
 static JOIN_HANDLE: Mutex<Option<thread::JoinHandle<()>>> = Mutex::new(None);
 
-fn handle_message(p: Publish) {
+fn handle_message(p: &Publish) {
     let topic_parts: Vec<&str> = p.topic.split('/').collect();
 
     if topic_parts.len() != 4 {
@@ -116,13 +116,13 @@ pub fn setup() {
     *JOIN_HANDLE.lock().unwrap() = Some(thread::spawn(move || {
         loop {
             client
-                .subscribe(format!("{}/control/#", topic_prefix), QoS::AtMostOnce)
+                .subscribe(format!("{topic_prefix}/control/#"), QoS::AtMostOnce)
                 .unwrap();
 
             for (i, notification) in connection.iter().enumerate() {
                 match notification {
                     Ok(rumqttc::Event::Incoming(rumqttc::Incoming::Publish(p))) => {
-                        handle_message(p);
+                        handle_message(&p);
                     }
                     Ok(rumqttc::Event::Outgoing(rumqttc::Outgoing::Disconnect)) => {
                         return;
@@ -131,7 +131,7 @@ pub fn setup() {
                         debug!("{i}. Notification = {notify:?}");
                     }
                     Err(error) => {
-                        error!("{:#?}", error);
+                        error!("{error:#?}");
                         break;
                     }
                 }
@@ -150,16 +150,13 @@ pub fn teardown() {
 
     let mut client = CLIENT.lock().unwrap();
 
-    match client.as_mut() {
-        Some(client) => {
-            if let Err(e) = client.disconnect() {
-                error!("{}", e);
-            }
+    if let Some(client) = client.as_mut() {
+        if let Err(e) = client.disconnect() {
+            error!("{e}");
         }
-        None => {
-            debug!("Not disconnecting from MQTT since we're not connected.");
-            return;
-        }
+    } else {
+        debug!("Not disconnecting from MQTT since we're not connected.");
+        return;
     }
 
     // Destroy MQTT client.
