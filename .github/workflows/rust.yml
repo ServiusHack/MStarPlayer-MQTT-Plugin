@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+    - name: Lint
+      run: cargo clippy --all-targets -- -D warnings
     - name: Build
       run: cargo build --verbose
     - name: Start MQTT broker
@@ -29,6 +31,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+    - name: Lint
+      run: cargo clippy --all-targets -- -D warnings
     - name: Build
       run: cargo build --verbose --release
     - name: Run tests

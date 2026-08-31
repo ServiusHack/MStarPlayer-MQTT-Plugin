@@ -110,6 +110,7 @@ fn new_select_predicate(
 
 #[test]
 #[ignore = "Requires running MQTT broker"]
+#[allow(clippy::too_many_lines)]
 fn mqtt_interaction() {
     let init = plugin_interface_v4::Init {
         listPlayers,
