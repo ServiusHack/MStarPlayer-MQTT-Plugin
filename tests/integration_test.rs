@@ -231,6 +231,27 @@ fn mqtt_interaction() {
 
     {
         let player_name = player_name.clone();
+        let ctx = MockCallbacks::select_context();
+        ctx.expect()
+            .once()
+            .return_const(())
+            .withf(new_select_predicate(&player_name, 123));
+        let ctx = MockCallbacks::play_context();
+        ctx.expect()
+            .once()
+            .return_const(())
+            .withf(new_player_name_predicate(&player_name));
+
+        publish_with_payload_and_wait(
+            &mut client,
+            format!("{TOPIC_PREFIX}/control/Test Player/play"),
+            String::from("123").as_bytes().into(),
+            &mut connection,
+        );
+    }
+
+    {
+        let player_name = player_name.clone();
         let ctx = MockCallbacks::stop_context();
         ctx.expect()
             .once()

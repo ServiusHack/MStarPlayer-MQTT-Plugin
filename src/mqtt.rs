@@ -1,6 +1,6 @@
 use log::{debug, error, warn};
 use rumqttc::{Client, MqttOptions, Publish, QoS};
-use std::ffi::CString;
+use std::ffi::{c_char, CString};
 use std::sync::Mutex;
 use std::thread;
 
@@ -64,6 +64,9 @@ fn handle_message(p: &Publish) {
 
     match received_command {
         "play" => {
+            if !p.payload.is_empty() {
+                select_from_payload(p, received_player_name.as_ptr(), init);
+            }
             (init.play)(received_player_name.as_ptr());
         }
         "stop" => {
@@ -75,21 +78,29 @@ fn handle_message(p: &Publish) {
         "previous" => {
             (init.previous)(received_player_name.as_ptr());
         }
-        "select" => match String::from_utf8(p.payload.to_vec()) {
-            Ok(payload) => match payload.parse::<i32>() {
-                Ok(playlist_index) => {
-                    (init.select)(received_player_name.as_ptr(), playlist_index);
-                }
-                Err(e) => {
-                    warn!("Received payload isn't a 32 bit signed number: {e}");
-                }
-            },
-            Err(e) => {
-                warn!("Received payload unable to decode as UTF-8: {e}");
-            }
-        },
+        "select" => select_from_payload(p, received_player_name.as_ptr(), init),
         _ => {
             warn!("Received topic with unknown command: {}", p.topic);
+        }
+    }
+}
+
+fn select_from_payload(
+    p: &Publish,
+    received_player_name: *const c_char,
+    init: &crate::plugin_interface_v4::Init,
+) {
+    match String::from_utf8(p.payload.to_vec()) {
+        Ok(payload) => match payload.parse::<i32>() {
+            Ok(playlist_index) => {
+                (init.select)(received_player_name, playlist_index);
+            }
+            Err(e) => {
+                warn!("Received payload isn't a 32 bit signed number: {e}");
+            }
+        },
+        Err(e) => {
+            warn!("Received payload unable to decode as UTF-8: {e}");
         }
     }
 }

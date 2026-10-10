@@ -36,13 +36,16 @@ While playback is happening messages are published as often as the player inform
 
 For each player the plugin subscribes to these topics under `<prefix>/control/<player name>/<command>`:
 
-| Command    | Will                                | Payload       |
-|------------|-------------------------------------|---------------|
-| `play`     | start playback                      | *none*        |
-| `stop`     | stop playback                       | *none*        |
-| `next`     | jump to the next playlist entry     | *none*        |
-| `previous` | jump to the previous playlist entry | *none*        |
-| `select`   | select playlist entry               | 0-based index |
+| Command    | Will                                | Payload                |
+|------------|-------------------------------------|------------------------|
+| `play`     | start playback                      | optional 0-based index |
+| `stop`     | stop playback                       | *none*                 |
+| `next`     | jump to the next playlist entry     | *none*                 |
+| `previous` | jump to the previous playlist entry | *none*                 |
+| `select`   | select playlist entry               | 0-based index          |
+
+If no payload is provided for `play` the current playlist entry is played.
+Otherwise this behaves like a `select` before `play`.
 
 ## Building
 
